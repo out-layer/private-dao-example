@@ -44,11 +44,11 @@ const OUTLAYER_CONTRACT_ID: &str = "outlayer.testnet";
 trait OutLayer {
     fn request_execution(
         &mut self,
-        code_source: serde_json::Value,
-        resource_limits: serde_json::Value,
-        input_data: String,
+        source: serde_json::Value,
+        resource_limits: Option<serde_json::Value>,
+        input_data: Option<String>,
         secrets_ref: Option<serde_json::Value>,
-        response_format: String,
+        response_format: Option<String>,
         payer_account_id: Option<AccountId>,
     );
 }
@@ -607,10 +607,12 @@ impl PrivateDAO {
 
     /// Request key derivation from OutLayer
     fn request_key_derivation(&self, user: AccountId, attached_deposit: Balance) -> Promise {
-        let code_source = serde_json::json!({
-            "repo": "https://github.com/zavodil/private-dao-ark",
-            "commit": "main",
-            "build_target": "wasm32-wasip1"
+        let source = serde_json::json!({
+            "GitHub": {
+                "repo": "https://github.com/zavodil/private-dao-ark",
+                "commit": "main",
+                "build_target": "wasm32-wasip1"
+            }
         });
 
         let resource_limits = serde_json::json!({
@@ -636,11 +638,11 @@ impl PrivateDAO {
             .with_attached_deposit(NearToken::from_yoctonear(attached_deposit))
             .with_unused_gas_weight(1)
             .request_execution(
-                code_source,
-                resource_limits,
-                serde_json::to_string(&input_data).unwrap(),
-                Some(secrets_ref), 
-                "Json".to_string(),
+                source,
+                Some(resource_limits),
+                Some(serde_json::to_string(&input_data).unwrap()),
+                Some(secrets_ref),
+                Some("Json".to_string()),
                 Some(user.clone()), // Refund to user
             )
             .then(
@@ -661,10 +663,12 @@ impl PrivateDAO {
         // Get proposal to pass quorum info to worker
         let proposal = self.proposals.get(&proposal_id).unwrap();
 
-        let code_source = serde_json::json!({
-            "repo": "https://github.com/zavodil/private-dao-ark",
-            "commit": "main",
-            "build_target": "wasm32-wasip1"
+        let source = serde_json::json!({
+            "GitHub": {
+                "repo": "https://github.com/zavodil/private-dao-ark",
+                "commit": "main",
+                "build_target": "wasm32-wasip1"
+            }
         });
 
         let resource_limits = serde_json::json!({
@@ -691,11 +695,11 @@ impl PrivateDAO {
             .with_attached_deposit(NearToken::from_yoctonear(attached_deposit))
             .with_unused_gas_weight(1)
             .request_execution(
-                code_source,
-                resource_limits,
-                serde_json::to_string(&input_data).unwrap(),
+                source,
+                Some(resource_limits),
+                Some(serde_json::to_string(&input_data).unwrap()),
                 Some(secrets_ref), // Master secret from keymaster
-                "Json".to_string(),
+                Some("Json".to_string()),
                 Some(payer), // Refund to payer
             )
             .then(
