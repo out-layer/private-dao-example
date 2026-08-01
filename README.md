@@ -448,7 +448,7 @@ node --version  # v18+ recommended
 ### Build WASI Module
 
 ```bash
-cd wasi-examples/private-dao-example
+cd private-dao-example
 
 # Build for WASI Preview 1
 RUSTFLAGS="--cfg wasmedge --cfg tokio_unstable" \
@@ -887,7 +887,7 @@ pub fn cast_vote(&mut self, proposal_id: u64, encrypted_vote: String) {
 ### Unit Tests
 
 ```bash
-cd wasi-examples/private-dao-example
+cd private-dao-example
 cargo test
 
 # Output:
@@ -979,7 +979,7 @@ Measured on M1 MacBook Pro:
 ## 🏗️ Project Structure
 
 ```
-wasi-examples/private-dao-example/
+private-dao-example/
 ├── src/
 │   ├── main.rs           # Entry point, handles actions
 │   ├── crypto.rs         # HKDF + ECIES encryption
@@ -1035,8 +1035,8 @@ wasi-examples/private-dao-example/
 - [Storage Staking](https://docs.near.org/concepts/storage/storage-staking)
 
 **OutLayer:**
-- [Platform Documentation](../../README.md)
-- [WASI Tutorial](../WASI_TUTORIAL.md)
+- [Platform Documentation](https://github.com/fastnear/near-outlayer)
+- [WASI Tutorial](https://github.com/fastnear/near-outlayer/blob/main/wasi-examples/WASI_TUTORIAL.md)
 
 ---
 

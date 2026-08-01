@@ -387,7 +387,7 @@ Type 3: PercentageOfVoters(60)
 
 **OutLayer Platform:**
 - Documentation: [OutLayer docs](https://github.com/near-offshore/docs)
-- WASI Tutorial: [WASI_TUTORIAL.md](../WASI_TUTORIAL.md)
+- WASI Tutorial: [WASI_TUTORIAL.md](https://github.com/fastnear/near-outlayer/blob/main/wasi-examples/WASI_TUTORIAL.md)
 
 ---
 

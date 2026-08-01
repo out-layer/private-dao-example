@@ -6,7 +6,7 @@ This document provides a technical analysis of the Private DAO voting system bui
 
 ## Overview
 
-**Location**: `/wasi-examples/private-dao-example/`
+**Location**: [out-layer/private-dao-example](https://github.com/out-layer/private-dao-example)
 
 **Purpose**: Demonstrate anonymous, verifiable voting for DAOs using cryptography and TEE.
 
@@ -655,5 +655,5 @@ The Private DAO example demonstrates:
 ---
 
 **Document version**: 2025-11-08
-**WASI module**: `/wasi-examples/private-dao-example/`
-**Full README**: [/wasi-examples/private-dao-example/README.md](../../wasi-examples/private-dao-example/README.md)
+**WASI module**: this repository
+**Full README**: [README.md](README.md)

@@ -13,7 +13,7 @@
 ## Step 1: Build WASI Module
 
 ```bash
-cd wasi-examples/private-dao-example
+cd private-dao-example
 
 # Build WASI module
 ./build.sh

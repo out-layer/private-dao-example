@@ -476,12 +476,12 @@ NEAR OutLayer enables a new class of dApps that were previously impossible:
 
 **Code**: https://github.com/out-layer/private-dao-example
 
-**Docs**: [Full README](README.md) | [Technical Deep Dive](../../docs/examples/PRIVATE_DAO.md)
+**Docs**: [Full README](README.md) | [Technical Deep Dive](PRIVATE_DAO.md)
 
 **Deploy**:
 ```bash
 # Build WASI module
-cd wasi-examples/private-dao-example
+cd private-dao-example
 cargo build --target wasm32-wasip1 --release
 
 # Deploy contract
