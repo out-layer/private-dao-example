@@ -1,11 +1,11 @@
 [package]
-name = "private-dao-ark"
+name = "private-dao-example"
 version = "0.1.0"
 edition = "2021"
 
 # WASI binary (not library) - required for WASI compatibility
 [[bin]]
-name = "private-dao-ark"
+name = "private-dao-example"
 path = "src/main.rs"
 
 [dependencies]

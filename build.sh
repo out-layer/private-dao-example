@@ -1,7 +1,7 @@
 #!/bin/bash
 set -e
 
-echo "🔨 Building private-dao-ark WASI module..."
+echo "🔨 Building private-dao-example WASI module..."
 
 # Check if wasm32-wasip1 target is installed
 if ! rustup target list | grep -q "wasm32-wasip1 (installed)"; then
@@ -16,7 +16,7 @@ fi
 cargo build --target wasm32-wasip1 --release
 
 # Output location
-WASM_FILE="target/wasm32-wasip1/release/private-dao-ark.wasm"
+WASM_FILE="target/wasm32-wasip1/release/private-dao-example.wasm"
 
 if [ -f "$WASM_FILE" ]; then
     SIZE=$(ls -lh "$WASM_FILE" | awk '{print $5}')

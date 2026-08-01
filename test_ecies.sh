@@ -1,6 +1,6 @@
 #!/bin/bash
 # Test ECIES encryption implementation
-# This script builds and tests the private-dao-ark WASM module
+# This script builds and tests the private-dao-example WASM module
 
 set -e  # Exit on error
 
@@ -15,7 +15,7 @@ echo "✅ Build successful!"
 echo ""
 
 # Check binary size
-WASM_PATH="target/wasm32-wasip1/release/private-dao-ark.wasm"
+WASM_PATH="target/wasm32-wasip1/release/private-dao-example.wasm"
 SIZE=$(ls -lh "$WASM_PATH" | awk '{print $5}')
 echo "📊 WASM binary size: $SIZE"
 echo ""
@@ -58,6 +58,6 @@ echo "✅ Encryption/decryption round-trip verified"
 echo "✅ Security test passed (wrong user cannot decrypt)"
 echo ""
 echo "Next steps:"
-echo "1. Update frontend encryption in VoteOnProposal.tsx"
+echo "1. Run ./test_full_cycle.sh for the encrypt-and-tally path outside the crate"
 echo "2. Test end-to-end with real OutLayer worker"
 echo "3. Deploy to testnet"

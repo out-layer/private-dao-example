@@ -13,13 +13,13 @@
 ## Step 1: Build WASI Module
 
 ```bash
-cd wasi-examples/private-dao-ark
+cd wasi-examples/private-dao-example
 
 # Build WASI module
 ./build.sh
 
 # Verify build
-ls -lh target/wasm32-wasip1/release/private-dao-ark.wasm
+ls -lh target/wasm32-wasip1/release/private-dao-example.wasm
 ```
 
 **Expected output**: 167K WASM file

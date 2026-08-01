@@ -276,7 +276,7 @@ function App() {
       <footer className="App-footer">
         <p>Powered by NEAR OutLayer • Private voting with TEE</p>
         <a
-          href="https://github.com/zavodil/private-dao-ark"
+          href="https://github.com/out-layer/private-dao-example"
           target="_blank"
           rel="noopener noreferrer"
         >

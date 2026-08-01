@@ -51,7 +51,7 @@ Instead of giving each user their own keypair, we use a single master secret sto
 
 ```rust
 // In TEE only
-let master_secret = std::env::var("DAO_MASTER_SECRET")?;
+let master_secret = std::env::var("PROTECTED_DAO_MASTER_SECRET")?;
 
 // Derive unique key for each user
 let user_privkey = HKDF-SHA256(
@@ -200,7 +200,7 @@ near call outlayer.testnet store_secrets '{
 **When WASM executes:**
 ```rust
 // Secret automatically injected into environment
-let secret = std::env::var("DAO_MASTER_SECRET")?;
+let secret = std::env::var("PROTECTED_DAO_MASTER_SECRET")?;
 // Use secret for cryptography
 // Secret deleted from memory after execution
 ```
@@ -474,14 +474,14 @@ NEAR OutLayer enables a new class of dApps that were previously impossible:
 
 ## Try It Yourself
 
-**Code**: https://github.com/near-examples/outlayer-examples/tree/main/private-dao-ark
+**Code**: https://github.com/out-layer/private-dao-example
 
 **Docs**: [Full README](README.md) | [Technical Deep Dive](../../docs/examples/PRIVATE_DAO.md)
 
 **Deploy**:
 ```bash
 # Build WASI module
-cd wasi-examples/private-dao-ark
+cd wasi-examples/private-dao-example
 cargo build --target wasm32-wasip1 --release
 
 # Deploy contract

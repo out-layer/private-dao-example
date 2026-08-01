@@ -10,7 +10,7 @@
 - ✅ Returns real compressed public keys (33 bytes: 0x02/0x03 + X coordinate)
 - ✅ Uses libsecp256k1 for key generation (WASI-compatible)
 - ✅ All 7 unit tests passing (deterministic keys, encryption/decryption)
-- ✅ WASM binary compiles successfully (1.3 MB)
+- ✅ WASM binary compiles successfully (280 KB)
 
 **Crypto Stack**:
 - **HKDF-SHA256**: Deterministic key derivation from master secret + DAO + user

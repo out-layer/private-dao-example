@@ -609,7 +609,7 @@ impl PrivateDAO {
     fn request_key_derivation(&self, user: AccountId, attached_deposit: Balance) -> Promise {
         let source = serde_json::json!({
             "GitHub": {
-                "repo": "https://github.com/zavodil/private-dao-ark",
+                "repo": "https://github.com/out-layer/private-dao-example",
                 "commit": "main",
                 "build_target": "wasm32-wasip1"
             }
@@ -665,7 +665,7 @@ impl PrivateDAO {
 
         let source = serde_json::json!({
             "GitHub": {
-                "repo": "https://github.com/zavodil/private-dao-ark",
+                "repo": "https://github.com/out-layer/private-dao-example",
                 "commit": "main",
                 "build_target": "wasm32-wasip1"
             }

@@ -8,7 +8,7 @@
 
 set -e
 
-WASM_FILE="target/wasm32-wasip1/release/private-dao-ark.wasm"
+WASM_FILE="target/wasm32-wasip1/release/private-dao-example.wasm"
 WASI_TEST="../wasi-test-runner/target/release/wasi-test"
 MASTER="0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef"
 DAO="dao.testnet"
@@ -29,15 +29,23 @@ echo "🗳️  Private DAO Voting - Full Cycle Test"
 echo "========================================"
 echo ""
 
+# Ask the module for a voter's public key, exactly as a client would.
+derive_pubkey() {
+    "$WASI_TEST" --wasm "$WASM_FILE" \
+        --input "{\"action\":\"derive_pubkey\",\"dao_account\":\"$DAO\",\"user_account\":\"$1\"}" \
+        --env PROTECTED_DAO_MASTER_SECRET=$MASTER 2>&1 \
+      | grep -A 1000 "^Output:" | tail -n +2 | head -n 1 | jq -r '.result.pubkey'
+}
+
 # Step 1: Generate encrypted votes
 echo "📝 Step 1: Generating encrypted votes..."
 echo ""
 
-# Generate votes to temp files
-python3 encrypt_test_vote.py $MASTER $DAO alice.testnet yes > /tmp/alice_vote.json
-python3 encrypt_test_vote.py $MASTER $DAO bob.testnet no > /tmp/bob_vote.json
-python3 encrypt_test_vote.py $MASTER $DAO carol.testnet yes > /tmp/carol_vote.json
-python3 encrypt_test_vote.py $MASTER $DAO dave.testnet "noise_123" 2>&1 | grep -v "Warning:" > /tmp/dave_vote.json
+# The voter only ever sees a public key; the private half exists solely inside the TEE.
+python3 encrypt_test_vote.py "$(derive_pubkey alice.testnet)" alice.testnet yes > /tmp/alice_vote.json
+python3 encrypt_test_vote.py "$(derive_pubkey bob.testnet)" bob.testnet no > /tmp/bob_vote.json
+python3 encrypt_test_vote.py "$(derive_pubkey carol.testnet)" carol.testnet yes > /tmp/carol_vote.json
+python3 encrypt_test_vote.py "$(derive_pubkey dave.testnet)" dave.testnet "noise_123" 2>/dev/null > /tmp/dave_vote.json
 
 echo "✅ Votes encrypted (client-side simulation)"
 echo "   - alice.testnet: YES (encrypted)"
@@ -55,18 +63,11 @@ echo ""
 echo "🔒 Step 3: Tallying votes in TEE (OutLayer Worker)..."
 echo ""
 
-# Extract vote data for JSON
+# Extract vote data for JSON. No separate nonce: ECIES carries it inside the ciphertext.
 ALICE_ENC=$(jq -r .encrypted_vote /tmp/alice_vote.json)
-ALICE_NONCE=$(jq -r .nonce /tmp/alice_vote.json)
-
 BOB_ENC=$(jq -r .encrypted_vote /tmp/bob_vote.json)
-BOB_NONCE=$(jq -r .nonce /tmp/bob_vote.json)
-
 CAROL_ENC=$(jq -r .encrypted_vote /tmp/carol_vote.json)
-CAROL_NONCE=$(jq -r .nonce /tmp/carol_vote.json)
-
 DAVE_ENC=$(jq -r .encrypted_vote /tmp/dave_vote.json)
-DAVE_NONCE=$(jq -r .nonce /tmp/dave_vote.json)
 
 # Create tally input
 TALLY_INPUT=$(cat <<EOF
@@ -78,28 +79,25 @@ TALLY_INPUT=$(cat <<EOF
     {
       "user": "alice.testnet",
       "encrypted_vote": "$ALICE_ENC",
-      "nonce": "$ALICE_NONCE",
       "timestamp": 1700000000
     },
     {
       "user": "bob.testnet",
       "encrypted_vote": "$BOB_ENC",
-      "nonce": "$BOB_NONCE",
       "timestamp": 1700000001
     },
     {
       "user": "carol.testnet",
       "encrypted_vote": "$CAROL_ENC",
-      "nonce": "$CAROL_NONCE",
       "timestamp": 1700000002
     },
     {
       "user": "dave.testnet",
       "encrypted_vote": "$DAVE_ENC",
-      "nonce": "$DAVE_NONCE",
       "timestamp": 1700000003
     }
-  ]
+  ],
+  "quorum": { "Absolute": { "min_votes": 3 } }
 }
 EOF
 )
@@ -107,10 +105,11 @@ EOF
 # Run tallying
 RESULT=$("$WASI_TEST" --wasm "$WASM_FILE" \
   --input "$TALLY_INPUT" \
-  --env DAO_MASTER_SECRET=$MASTER 2>&1)
+  --env PROTECTED_DAO_MASTER_SECRET=$MASTER 2>&1)
 
-# Extract just the output JSON
-OUTPUT=$(echo "$RESULT" | grep -A 1000 "📤 Output:" | tail -n +2 | head -n 1)
+# Extract just the output JSON. The runner prints a bare "Output:" header and the JSON
+# on the following line; "Output size:" above it does not match this pattern.
+OUTPUT=$(echo "$RESULT" | grep -A 1000 "^Output:" | tail -n +2 | head -n 1)
 
 echo "✅ Tallying complete!"
 echo ""

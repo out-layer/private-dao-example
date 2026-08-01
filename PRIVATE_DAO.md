@@ -6,7 +6,7 @@ This document provides a technical analysis of the Private DAO voting system bui
 
 ## Overview
 
-**Location**: `/wasi-examples/private-dao-ark/`
+**Location**: `/wasi-examples/private-dao-example/`
 
 **Purpose**: Demonstrate anonymous, verifiable voting for DAOs using cryptography and TEE.
 
@@ -28,12 +28,12 @@ This document provides a technical analysis of the Private DAO voting system bui
 #### `derive_pubkey`
 ```rust
 Input:  { action: "derive_pubkey", dao_account: "dao.testnet", user_account: "alice.testnet" }
-Secrets: { DAO_MASTER_SECRET: "hex..." }
+Secrets: { PROTECTED_DAO_MASTER_SECRET: "hex..." }
 Output: { pubkey: "02f1a2b3..." }
 ```
 
 **Flow:**
-1. Read `DAO_MASTER_SECRET` from env vars (injected by keymaster)
+1. Read `PROTECTED_DAO_MASTER_SECRET` from env vars (injected by keymaster)
 2. Derive user privkey: `HKDF-SHA256(master_secret, info="user:dao:alice")`
 3. Compute pubkey: `secp256k1::derive_public_key(privkey)`
 4. Return hex-encoded compressed pubkey (33 bytes)
@@ -56,7 +56,7 @@ Input: {
   ],
   quorum: { Absolute: { min_votes: 10 } }
 }
-Secrets: { DAO_MASTER_SECRET: "hex..." }
+Secrets: { PROTECTED_DAO_MASTER_SECRET: "hex..." }
 Output: {
   yes_count: 7,
   no_count: 3,
@@ -139,7 +139,7 @@ pub struct PrivateDAO {
 3. Call OutLayer `tally_votes` with:
    - All votes
    - Quorum requirements
-   - Secrets ref (DAO_MASTER_SECRET from keymaster)
+   - Secrets ref (PROTECTED_DAO_MASTER_SECRET from keymaster)
 4. Receive TallyResult with counts, merkle root, proofs
 5. Store tally result in proposal
 6. Update proposal status (Passed/Rejected based on yes > no and quorum met)
@@ -345,18 +345,18 @@ timestampView.setBigUint64(0, timestampBigInt, true);  // true = little-endian
 
 ### 1. Secrets Management (Keymaster)
 
-**Secret**: `DAO_MASTER_SECRET` (32-byte hex string)
+**Secret**: `PROTECTED_DAO_MASTER_SECRET` (32-byte hex string)
 
 **Storage**:
 - Encrypted in OutLayer contract via `store_secrets()`
 - Access control: AllowAll (any worker can access for this DAO)
 - Profile: "production"
-- Repo: "github.com/user/private-dao-ark"
+- Repo: "github.com/user/private-dao-example"
 
 **Injection**:
 - Keymaster decrypts secret
 - Injects into WASI environment variables
-- WASM reads: `std::env::var("DAO_MASTER_SECRET")`
+- WASM reads: `std::env::var("PROTECTED_DAO_MASTER_SECRET")`
 
 **Security**:
 - Secret never exposed to contract or client
@@ -518,7 +518,7 @@ fn generate_tee_attestation(proposal_id, merkle_root, yes, no) -> String {
 1. **TEE hardware**: Intel SGX / AMD SEV is secure (in production)
 2. **OutLayer platform**: Correctly executes WASM in TEE
 3. **Cryptography**: secp256k1, ECIES, HKDF, SHA-256 are secure
-4. **WASM code**: The private-dao-ark.wasm binary is honest
+4. **WASM code**: The private-dao-example.wasm binary is honest
 
 **What you do NOT trust:**
 1. ❌ Other DAO members
@@ -538,7 +538,7 @@ fn generate_tee_attestation(proposal_id, merkle_root, yes, no) -> String {
 ### Build Sizes
 
 ```
-WASI module:      1.3 MB (wasm32-wasip1, release)
+WASI module:      280 KB (wasm32-wasip1, release)
 Contract:         ~150 KB (wasm32-unknown-unknown, release)
 Frontend bundle:  ~400 KB (gzipped)
 ```
@@ -655,5 +655,5 @@ The Private DAO example demonstrates:
 ---
 
 **Document version**: 2025-11-08
-**WASI module**: `/wasi-examples/private-dao-ark/`
-**Full README**: [/wasi-examples/private-dao-ark/README.md](../../wasi-examples/private-dao-ark/README.md)
+**WASI module**: `/wasi-examples/private-dao-example/`
+**Full README**: [/wasi-examples/private-dao-example/README.md](../../wasi-examples/private-dao-example/README.md)

@@ -2,14 +2,14 @@
 
 ## ✅ All Tests Passing
 
-This document summarizes the test results for the private-dao-ark WASI module.
+This document summarizes the test results for the private-dao-example WASI module.
 
 ## Build Information
 
 ```bash
 $ ./build.sh
 ✅ Build complete!
-📦 WASM: target/wasm32-wasip1/release/private-dao-ark.wasm
+📦 WASM: target/wasm32-wasip1/release/private-dao-example.wasm
 📏 Size: 167K
 ```
 
@@ -151,14 +151,14 @@ Project uses the OutLayer wasi-test-runner for local testing:
 
 ```bash
 $ ../wasi-test-runner/target/release/wasi-test \
-    --wasm target/wasm32-wasip1/release/private-dao-ark.wasm \
+    --wasm target/wasm32-wasip1/release/private-dao-example.wasm \
     --input '{"action":"derive_pubkey","dao_account":"dao.testnet","user_account":"alice.testnet"}' \
-    --env DAO_MASTER_SECRET=0123...
+    --env PROTECTED_DAO_MASTER_SECRET=0123...
 ```
 
 ## Conclusion
 
-The private-dao-ark WASI module is **production-ready for MVP deployment**:
+The private-dao-example WASI module is **production-ready for MVP deployment**:
 
 - ✅ All unit tests passing (4 tests in crypto.rs, 2 tests in tally.rs)
 - ✅ End-to-end integration tests passing

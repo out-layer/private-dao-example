@@ -75,7 +75,7 @@ Client                    DAO Contract              OutLayer (TEE)
   │                            │      user: alice.near    │
   │                            │    }                     │
   │                            │    secrets: {            │
-  │                            │      DAO_MASTER_SECRET   │
+  │                            │      PROTECTED_DAO_MASTER_SECRET   │
   │                            │    }                     │
   │                            │                          │
   │                            │                          │ 3. HKDF-SHA256
@@ -145,7 +145,7 @@ Anyone                   DAO Contract              OutLayer (TEE)
   │                            │      }                   │
   │                            │    }                     │
   │                            │    secrets: {            │
-  │                            │      DAO_MASTER_SECRET   │
+  │                            │      PROTECTED_DAO_MASTER_SECRET   │
   │                            │    }                     │
   │                            │                          │
   │                            │                          │ 3. For each vote:
@@ -215,7 +215,7 @@ Each user gets a unique secp256k1 keypair derived deterministically from the mas
 
 ```rust
 // In TEE (OutLayer worker)
-let master_secret = std::env::var("DAO_MASTER_SECRET")?;
+let master_secret = std::env::var("PROTECTED_DAO_MASTER_SECRET")?;
 let info = format!("user:{}:{}", dao_account, user_account);
 
 let user_privkey = HKDF-SHA256(
@@ -448,13 +448,13 @@ node --version  # v18+ recommended
 ### Build WASI Module
 
 ```bash
-cd wasi-examples/private-dao-ark
+cd wasi-examples/private-dao-example
 
 # Build for WASI Preview 1
 RUSTFLAGS="--cfg wasmedge --cfg tokio_unstable" \
   cargo build --target wasm32-wasip1 --release
 
-# Output: target/wasm32-wasip1/release/private-dao-ark.wasm (~1.3 MB)
+# Output: target/wasm32-wasip1/release/private-dao-example.wasm (~280 KB)
 ```
 
 ### Build DAO Contract
@@ -491,49 +491,41 @@ near contract deploy privatedao.testnet \
 
 ### Setup Master Secret
 
-**Generate 32-byte hex secret:**
-```bash
-python3 -c "import secrets; print(secrets.token_hex(32))"
-# Example output: a1b2c3d4e5f6789012345678901234567890abcdef1234567890abcdef123456
-```
+The master secret must be **generated inside the TEE**, not by you. The `PROTECTED_`
+prefix is reserved for exactly this: the keystore generates the value, encrypts it, and
+injects it into the module at execution time. Nobody — including you — ever sees the
+plaintext, which is what makes the "the DAO operator cannot decrypt votes" claim true
+rather than a promise. The keystore **rejects** manually supplied secrets whose name
+carries the `PROTECTED_` prefix, so there is no way to do this by hand even if you
+wanted to.
 
-**Store in OutLayer:**
-```bash
-# Option 1: Via Dashboard UI
-# 1. Open http://localhost:3000/secrets
-# 2. Connect wallet: privatedao.testnet
-# 3. Create secret:
-#    - Repo: github.com/yourusername/private-dao-ark
-#    - Branch: main
-#    - Profile: production
-#    - JSON: {"DAO_MASTER_SECRET":"a1b2c3d4e5f6..."}
-#    - Access: AllowAll
+Via the dashboard: open `/secrets`, connect the DAO wallet, use **Generate Secrets**
+with repository `github.com/yourusername/private-dao-example`, branch `main`, secret
+name `PROTECTED_DAO_MASTER_SECRET` and generation type `Hex 32 bytes`. You get back the
+key name for verification and nothing else.
 
-# Option 2: Via CLI (after encrypting with keystore)
+The dashboard then stores the encrypted blob on-chain for you. The equivalent contract
+call, if you are scripting it, is:
+
+```bash
 near call outlayer.testnet store_secrets '{
-  "repo": "github.com/yourusername/private-dao-ark",
-  "branch": "main",
+  "accessor": { "Repo": { "repo": "github.com/yourusername/private-dao-example", "branch": "main" } },
   "profile": "production",
-  "encrypted_data": [/* use encrypt_secrets.py */],
-  "access_condition": {"AllowAll": {}}
-}' --accountId privatedao.testnet --deposit 0.01
+  "encrypted_secrets_base64": "<blob returned by the keystore>",
+  "access": "AllowAll",
+  "vault_id": null
+}' --accountId privatedao.testnet --deposit 0.1
 ```
 
-**CRITICAL:** The WASI module reads `std::env::var("DAO_MASTER_SECRET")` - must be exactly this name!
+`vault_id` must be present even when null — near-sdk rejects JSON that omits a required
+`Option` field.
 
-### Upload WASM to GitHub
+**CRITICAL:** The WASI module reads `std::env::var("PROTECTED_DAO_MASTER_SECRET")` - must be exactly this name!
 
-```bash
-# Fork the repository and push your WASM
-git clone https://github.com/yourusername/private-dao-ark
-cd private-dao-ark
-cp ../wasi-examples/private-dao-ark/target/wasm32-wasip1/release/private-dao-ark.wasm .
-git add private-dao-ark.wasm
-git commit -m "Add compiled WASM"
-git push origin main
-```
-
-Or use GitHub releases for versioning.
+`PROTECTED_` secrets are immutable: the keystore refuses to regenerate one that already
+exists, because rotating it would silently invalidate every key derived from it and
+every vote encrypted to those keys. If you move the module to a different repository,
+you generate a new secret against the new accessor — the old one does not follow it.
 
 ### Run Frontend
 
@@ -720,7 +712,7 @@ near call privatedao.testnet finalize_proposal '{
    }
    ```
 4. OutLayer worker:
-   - Gets `DAO_MASTER_SECRET` from keymaster
+   - Gets `PROTECTED_DAO_MASTER_SECRET` from keymaster
    - Derives each user's privkey
    - Decrypts each vote using ECIES
    - Filters "yes"/"no" (ignores dummies)
@@ -895,7 +887,7 @@ pub fn cast_vote(&mut self, proposal_id: u64, encrypted_vote: String) {
 ### Unit Tests
 
 ```bash
-cd wasi-examples/private-dao-ark
+cd wasi-examples/private-dao-example
 cargo test
 
 # Output:
@@ -987,7 +979,7 @@ Measured on M1 MacBook Pro:
 ## 🏗️ Project Structure
 
 ```
-wasi-examples/private-dao-ark/
+wasi-examples/private-dao-example/
 ├── src/
 │   ├── main.rs           # Entry point, handles actions
 │   ├── crypto.rs         # HKDF + ECIES encryption
