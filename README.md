@@ -1068,7 +1068,7 @@ Contributions welcome! Areas to improve:
 
 ## 📄 License
 
-MIT License - see [../../LICENSE](../../LICENSE)
+MIT OR Apache-2.0, at your option — see `LICENSE-MIT` and `LICENSE-APACHE`.
 
 ---
 
