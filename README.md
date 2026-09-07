@@ -1035,8 +1035,8 @@ private-dao-example/
 - [Storage Staking](https://docs.near.org/concepts/storage/storage-staking)
 
 **OutLayer:**
-- [Platform Documentation](https://github.com/fastnear/near-outlayer)
-- [WASI Tutorial](https://github.com/fastnear/near-outlayer/blob/main/wasi-examples/WASI_TUTORIAL.md)
+- [Platform Documentation](https://github.com/out-layer/outlayer)
+- [WASI Tutorial](https://github.com/out-layer/outlayer/blob/main/wasi-examples/WASI_TUTORIAL.md)
 
 ---
 
